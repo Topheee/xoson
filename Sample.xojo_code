@@ -39,12 +39,6 @@ Protected Class Sample
 
 	#tag ViewBehavior
 		#tag ViewProperty
-			Name="ErrorNumber"
-			Group="Behavior"
-			InitialValue="0"
-			Type="Integer"
-		#tag EndViewProperty
-		#tag ViewProperty
 			Name="Index"
 			Visible=true
 			Group="ID"
@@ -84,9 +78,19 @@ Protected Class Sample
 			Type="Integer"
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="Reason"
+			Name="decimalNumber"
 			Group="Behavior"
-			Type="Text"
+			Type="Double"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="number"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="test"
+			Group="Behavior"
+			Type="Boolean"
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class

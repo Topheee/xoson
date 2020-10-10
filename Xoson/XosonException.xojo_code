@@ -4,7 +4,7 @@ Inherits RuntimeException
 	#tag Method, Flags = &h0
 		Sub Constructor(parseError As Xoson.ParseError, message As String)
 		  ErrorNumber = Integer(parseError)
-		  me.Message = "XosonException: " + message
+		  me.Message = "XosonException " + str(ErrorNumber) + ": " + message
 		End Sub
 	#tag EndMethod
 

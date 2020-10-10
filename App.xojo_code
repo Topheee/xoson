@@ -11,7 +11,7 @@ Inherits ConsoleApplication
 		  serializable.Message = "These violent delights have violent ends"
 		  serializable.tm.Append(Xojo.Core.Date.Now)
 		  
-		  Dim serialization As Text = serializable.toJSONText()
+		  Dim serialization As Text = Xoson.toJSON(serializable)
 		  
 		  Print("/* JSON Serialization */")
 		  Print(serialization)
@@ -22,13 +22,19 @@ Inherits ConsoleApplication
 		  serializable.decimalNumber = 4.2
 		  serializable.test = true
 		  
-		  Print("/* Local modification */")
+		  Print("/* JSON Deserialization */")
 		  serializable.describe()
 		  
-		  serializable.fromJSONText(serialization)
+		  Xoson.fromJSON(serializable, serialization)
 		  
 		  Print("/* Values from previous JSON */")
 		  serializable.describe()
+		  
+		  Dim serializableArray() As Sample
+		  serializableArray.Append(serializable)
+		  
+		  Print("/* JSON Array Serialization */")
+		  print(Xoson.toJSON(serializableArray))
 		End Function
 	#tag EndEvent
 

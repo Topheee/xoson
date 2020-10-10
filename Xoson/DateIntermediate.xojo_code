@@ -41,6 +41,7 @@ Private Class DateIntermediate
 		  hour = Val(iso8601.StringValue(11,2))
 		  minute = Val(iso8601.StringValue(14,2))
 		  second = Val(iso8601.StringValue(17,2))
+		  millisecond = Val(iso8601.StringValue(20,3))
 		End Sub
 	#tag EndMethod
 
@@ -57,6 +58,10 @@ Private Class DateIntermediate
 
 	#tag Property, Flags = &h0
 		hour As Integer
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		millisecond As Integer
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -108,6 +113,36 @@ Private Class DateIntermediate
 			Visible=true
 			Group="Position"
 			InitialValue="0"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="day"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="hour"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="minute"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="month"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="second"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
+		#tag ViewProperty
+			Name="year"
+			Group="Behavior"
 			Type="Integer"
 		#tag EndViewProperty
 	#tag EndViewBehavior

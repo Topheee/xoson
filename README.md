@@ -8,13 +8,13 @@ The project makes use of the new `Xojo.Data.*` functions, meaning that **Xojo 20
 
 ## Installation
 
-Copy the __Xoson__ module into your project. The only exported elements are the `XosonException` class and the `Object.[to|from]JSON[Text]()` extension methods.
+Copy the __Xoson__ module into your project. The only exported elements are the `XosonException` class and the `[to|from]JSON()` functions.
 
 ## Usage
 
-Use the exported methods to convert objects and their properties to and from JSON.
+Use the exported functions to convert objects and their properties or arrays to and from JSON.
 
-For instance, the example project contains the `Sample` class:
+For instance, the example project in this repository contains the `Sample` class:
 ```
 Protected Class Sample
     decimalNumber As Double
@@ -42,8 +42,8 @@ Print(serialization)
 ## Notes
 
 * Only **public** properties are considered (feel free to change the code).
-* For **de**-serialization (`fromJSON()`), properties must be primitive, dates (`Date` and `Xojo.Core.Date`) or of a class with a public trivial constructor (no parameters).
-* Dates are serialized and read as **ISO8601** in **UTC** (second-level accuracy, milliseconds are ignored)
+* For **de**-serialization (`fromJSON()`), properties must be primitive, dates (`Date` and `Xojo.Core.Date`) or of a class with a public trivial constructor (no parameters). Arrays of those types are also supported.
+* Dates are serialized and read as **ISO8601** in **UTC** (to get millisecond-level precision, use `Xojo.Core.Date` instead of `Date`).
 * Multi-dimensional arrays are not supported. Feel free to contribute.
 
 This project is licensed under the terms of the MIT license.
