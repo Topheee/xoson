@@ -508,6 +508,11 @@ Protected Module Xoson
 		      if implicitlyConvertible(childType, propertyType) then
 		        propertyInfo.Value(obj) = childValue
 		        
+		      elseif childType.IsArray then
+		        Dim elementType As Xojo.Introspection.TypeInfo = propertyType.ArrayElementType()
+		        Dim arrayProperty As Auto = propertyInfo.Value(obj)
+		        arrayParser(childValue, arrayProperty, elementType)
+		        
 		      elseif sameMetaType(childType, propertyType) then
 		        if childType = GetTypeInfo(Xojo.Core.Dictionary) then
 		          Dim childItem As Xojo.Core.Dictionary = Xojo.Core.Dictionary(childValue)
@@ -522,11 +527,6 @@ Protected Module Xoson
 		          else
 		            fromJSONImpl(propertyInfo.Value(obj), childItem)
 		          end if
-		          
-		        elseif childType.IsArray then
-		          Dim elementType As Xojo.Introspection.TypeInfo = propertyType.ArrayElementType()
-		          Dim arrayProperty As Auto = propertyInfo.Value(obj)
-		          arrayParser(childValue, arrayProperty, elementType)
 		          
 		        end if
 		        
