@@ -3,6 +3,7 @@ Protected Class App
 Inherits ConsoleApplication
 	#tag Event
 		Function Run(args() as String) As Integer
+		  #Pragma Unused args
 		  'Xojo JSON serialization example
 		  
 		  Dim serializable As New Sample

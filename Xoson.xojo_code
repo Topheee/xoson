@@ -470,12 +470,9 @@ Protected Module Xoson
 		  'sets properties of obj to corresponding values from json object
 		  '@param obj the object to parse values in
 		  '@param json the deserialized JSON to parse (return value of Xojo.Data.ParseJSON)
-		  '@throws NilObjectException if json is Nil or XosonException if parsing failed
+		  '@throws XosonException if parsing failed
 		  
-		  if json = Nil then Raise New NilObjectException
-		  
-		  Dim tp As String
-		  Dim parameter As Variant
+		  if json = Nil then Raise New XosonException(Xoson.ParseError.InternalError, "json must not be nil in fromJSONImpl()")
 		  
 		  Dim objTypeInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(obj)
 		  Dim jsonTypeInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(json)
@@ -508,16 +505,12 @@ Protected Module Xoson
 		      Dim childValue As Auto = entry.Value
 		      Dim childType As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(childValue)
 		      
-		      if childValue = nil then
-		        if propertyType.isClass then
-		          propertyInfo.Value(obj) = nil
-		        else
-		          Raise New XosonException(ParseError.TypeNotMatching, "Property " + propertyInfo.Name + " is non-class but JSON child is null")
-		        end if
-		      elseif childType = GetTypeInfo(Xojo.Core.Dictionary) then
-		        Dim childItem As Xojo.Core.Dictionary = Xojo.Core.Dictionary(childValue)
+		      if implicitlyConvertible(childType, propertyType) then
+		        propertyInfo.Value(obj) = childValue
 		        
-		        if propertyType.isClass then
+		      elseif sameMetaType(childType, propertyType) then
+		        if childType = GetTypeInfo(Xojo.Core.Dictionary) then
+		          Dim childItem As Xojo.Core.Dictionary = Xojo.Core.Dictionary(childValue)
 		          
 		          if propertyInfo.Value(obj) = nil then
 		            Dim cons As Xojo.Introspection.ConstructorInfo = getSimpleConstructor(propertyType)
@@ -530,43 +523,15 @@ Protected Module Xoson
 		            fromJSONImpl(propertyInfo.Value(obj), childItem)
 		          end if
 		          
-		        elseif propertyType.isArray then
-		          Raise New XosonException(ParseError.TypeNotMatching, "Property " + propertyInfo.Name + " is array but JSON child isn't")
+		        elseif childType.IsArray then
+		          Dim elementType As Xojo.Introspection.TypeInfo = propertyType.ArrayElementType()
+		          Dim arrayProperty As Auto = propertyInfo.Value(obj)
+		          arrayParser(childValue, arrayProperty, elementType)
 		          
-		        else
-		          continue
 		        end if
-		        
-		      elseif childType.IsArray then
-		        if not propertyType.isArray then Raise New XosonException(ParseError.TypeNotMatching, "JSON child " + name + " is array but property isn't")
-		        
-		        Dim elementType As Xojo.Introspection.TypeInfo = propertyType.ArrayElementType()
-		        Dim arrayProperty As Auto = propertyInfo.Value(obj)
-		        arrayParser(childValue, arrayProperty, elementType)
-		        
-		      elseif childType = propertyType then
-		        propertyInfo.Value(obj) = childValue
-		        
-		      elseif childType = GetTypeInfo(Text) and propertyType = GetTypeInfo(String) _
-		        or childType = GetTypeInfo(String) and propertyType = GetTypeInfo(Text) then 'convert Text and String to each other
-		        propertyInfo.Value(obj) = childValue
-		        
-		      elseif childType = GetTypeInfo(Int32) and propertyType = GetTypeInfo(Int64) _
-		        or childType = GetTypeInfo(Int8) and (propertyType = GetTypeInfo(Int32) or propertyType = GetTypeInfo(Int64)) _
-		        or childType = GetTypeInfo(Single) and propertyType = GetTypeInfo(Double) then 'if we have more bytes in our target field, it's not so bad
-		        propertyInfo.Value(obj) = childValue
-		        
-		        'TODO implicitly convert signed to unsigned and vice versa
 		        
 		      elseif (propertyType = GetTypeInfo(Date) or propertyType = GetTypeInfo(Xojo.Core.Date)) _
 		        and (childType = GetTypeInfo(Text) or childType = GetTypeInfo(String)) then
-		        'Dim iso8601 As MemoryBlock
-		        'if childType = GetTypeInfo(Text) then
-		        'Dim tmp As String = CType(childValue, Text)
-		        'iso8601 = tmp
-		        'else
-		        'iso8601 = CType(childValue, String)
-		        'end if
 		        
 		        if propertyType = GetTypeInfo(Xojo.Core.Date) then
 		          propertyInfo.Value(obj) = parseXojoDate(childValue)
@@ -595,6 +560,31 @@ Protected Module Xoson
 	#tag EndMethod
 
 	#tag Method, Flags = &h21
+		Private Function implicitlyConvertible(typeA As Xojo.Introspection.TypeInfo, typeB As Xojo.Introspection.TypeInfo) As Boolean
+		  if typeA = nil or typeB = nil then Raise New XosonException(Xoson.ParseError.InternalError, "typeA and typeB must not be nil in implicitlyConvertible()")
+		  
+		  'convert...
+		  '* Text and String
+		  '* all integers and floating points
+		  '... to each other
+		  'TODO make strictness configurable: do not convert bigger types to smaller (e.g., do not convert Int64 to Int32)
+		  return (typeA = typeB) or (typeA.IsPrimitive and typeB.IsPrimitive and not isUnconvertable(typeA) and not isUnconvertable(typeB)) or _
+		  (typeA = GetTypeInfo(Text) and typeB = GetTypeInfo(String) or typeA = GetTypeInfo(String) and typeB = GetTypeInfo(Text))
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function isUnconvertable(aType As Xojo.Introspection.TypeInfo) As Boolean
+		  return aType <> nil and ( _
+		  aType = GetTypeInfo(Boolean) or _
+		  aType = GetTypeInfo(Color) or _
+		  aType = GetTypeInfo(String) or _
+		  aType = GetTypeInfo(Text) or _
+		  aType = GetTypeInfo(Currency))
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
 		Private Function parseDate(stringRepresentation As String) As Date
 		  
 		  Dim d As New DateIntermediate(stringRepresentation)
@@ -609,6 +599,18 @@ Protected Module Xoson
 		  Dim d As New DateIntermediate(stringRepresentation)
 		  
 		  return New Xojo.Core.Date(d.year, d.month, d.day, d.hour, d.minute, d.second, d.millisecond * 1000, new Xojo.Core.TimeZone(0))
+		End Function
+	#tag EndMethod
+
+	#tag Method, Flags = &h21
+		Private Function sameMetaType(typeA As Xojo.Introspection.TypeInfo, typeB As Xojo.Introspection.TypeInfo) As Boolean
+		  if typeA = nil or typeB = nil then Raise New XosonException(Xoson.ParseError.InternalError, "typeA and typeB must not be nil in sameMetaType()")
+		  
+		  return (typeA.IsPrimitive and typeB.IsPrimitive) or _
+		  (typeA.IsClass and typeB.IsClass) or _
+		  (typeA.IsArray and typeB.IsArray and typeA.ArrayRank() = typeB.ArrayRank() and sameMetaType(typeA.ArrayElementType, typeB.ArrayElementType)) or _
+		  (typeA.IsInterface and typeB.IsInterface) or _
+		  (typeA.IsPointer and typeB.IsPointer)
 		End Function
 	#tag EndMethod
 
@@ -683,7 +685,8 @@ Protected Module Xoson
 		  TypeNotMatching
 		  NoSimpleConstructor
 		  UnsupportedType
-		MultiDimArray
+		  MultiDimArray
+		InternalError
 	#tag EndEnum
 
 
