@@ -409,10 +409,8 @@ Protected Module Xoson
 
 	#tag Method, Flags = &h21
 		Private Function convertDate(d As Date) As String
-		  'simple Dates are always considered to be in the current timezone (TODO make configurable)
-		  Dim tz As Xojo.Core.TimeZone = Xojo.Core.TimeZone.Current()
 		  Dim utcDate As New Date(d)
-		  utcDate.TotalSeconds = utcDate.TotalSeconds - tz.SecondsFromGMT
+		  utcDate.GMTOffset = 0
 		  
 		  Dim mb As New MemoryBlock(24)
 		  mb.StringValue(0,4) = Format(utcDate.Year, "0000")
@@ -435,7 +433,7 @@ Protected Module Xoson
 
 	#tag Method, Flags = &h21
 		Private Function convertXojoDate(d As Xojo.Core.Date) As String
-		  Dim utcDate As New Xojo.Core.Date(d.SecondsFrom1970, New Xojo.Core.TimeZone(0))
+		  Dim utcDate As New Xojo.Core.Date(d.SecondsFrom1970, New Xojo.Core.TimeZone("Etc/UTC"))
 		  
 		  Dim mb As New MemoryBlock(24)
 		  mb.StringValue(0,4) = Format(utcDate.Year, "0000")
@@ -477,6 +475,8 @@ Protected Module Xoson
 		  Dim objTypeInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(obj)
 		  Dim jsonTypeInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(json)
 		  
+		  Dim optionalPrimitiveTypeInfo As Xojo.Introspection.TypeInfo = GetTypeInfo(Xoson.O.OptionalPrimitive)
+		  
 		  if objTypeInfo.IsArray and not jsonTypeInfo.IsArray then
 		    Raise New XosonException(ParseError.TypeNotMatching, "Object type " + objTypeInfo.Name + " is array but JSON type " + jsonTypeInfo.Name + " is non-array.")
 		    'TODO more tests about the two types
@@ -505,7 +505,21 @@ Protected Module Xoson
 		      Dim childValue As Auto = entry.Value
 		      Dim childType As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(childValue)
 		      
-		      if implicitlyConvertible(childType, propertyType) then
+		      if propertyType.IsSubclassOf(optionalPrimitiveTypeInfo) then
+		        Dim optionalPrimitiveProps() As Xojo.Introspection.PropertyInfo = propertyType.Properties
+		        Dim valueProp As Xojo.Introspection.PropertyInfo = optionalPrimitiveProps(0)
+		        Dim optionalPrimitiveObject As Auto = propertyInfo.Value(obj)
+		        
+		        if optionalPrimitiveObject = nil then
+		          Dim cons As Xojo.Introspection.ConstructorInfo = getSimpleConstructor(propertyType)
+		          if cons = Nil then Raise New XosonException(ParseError.NoSimpleConstructor, "No constructor with 0 parameters for class " + propertyType.Name)
+		          
+		          optionalPrimitiveObject = cons.Invoke()
+		        end if
+		        
+		        valueProp.Value(optionalPrimitiveObject) = childValue
+		        
+		      elseif implicitlyConvertible(childType, propertyType) then
 		        propertyInfo.Value(obj) = childValue
 		        
 		      elseif childType.IsArray then
@@ -598,7 +612,7 @@ Protected Module Xoson
 		  
 		  Dim d As New DateIntermediate(stringRepresentation)
 		  
-		  return New Xojo.Core.Date(d.year, d.month, d.day, d.hour, d.minute, d.second, d.millisecond * 1000, new Xojo.Core.TimeZone(0))
+		  return New Xojo.Core.Date(d.year, d.month, d.day, d.hour, d.minute, d.second, d.millisecond * 1000, new Xojo.Core.TimeZone("Etc/UTC"))
 		End Function
 	#tag EndMethod
 
@@ -629,12 +643,21 @@ Protected Module Xoson
 		  
 		  Dim tpInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(obj)
 		  
+		  Dim optionalPrimitiveTypeInfo As Xojo.Introspection.TypeInfo = GetTypeInfo(Xoson.O.OptionalPrimitive)
+		  
 		  if tpInfo.IsArray then
 		    Dim elementType As Xojo.Introspection.TypeInfo = tpInfo.ArrayElementType()
 		    return arrayConverter(obj, elementType)
 		    
-		  elseif tpInfo.IsEnum or tpInfo.IsPrimitive then
+		  elseif tpInfo.IsEnum then
 		    Raise New XosonException(ParseError.UnsupportedType, "The type " + tpInfo.FullName + " is not (de-)serializable.")
+		    
+		  elseif tpInfo.IsPrimitive then
+		    Return obj
+		    
+		  elseif obj IsA Xoson.O.OptionalPrimitive then
+		    Dim props() As Xojo.Introspection.PropertyInfo = tpInfo.Properties
+		    Return props(0).Value(obj)
 		    
 		  else
 		    Dim ret As New Xojo.Core.Dictionary()
@@ -646,7 +669,7 @@ Protected Module Xoson
 		        
 		        if prop.PropertyType.isClass then
 		          if prop.Value(obj) = nil then
-		            ret.Value(prop.Name) = nil
+		            if not prop.PropertyType.IsSubclassOf(optionalPrimitiveTypeInfo) then ret.Value(prop.Name) = nil
 		          elseif prop.PropertyType = GetTypeInfo(Date) then
 		            ret.Value(prop.Name) = convertDate(prop.Value(obj))
 		          elseif prop.PropertyType = GetTypeInfo(Xojo.Core.Date) then
@@ -697,6 +720,7 @@ Protected Module Xoson
 			Group="ID"
 			InitialValue="-2147483648"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Left"
@@ -704,18 +728,23 @@ Protected Module Xoson
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Name"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"
@@ -723,6 +752,7 @@ Protected Module Xoson
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Module

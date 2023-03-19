@@ -1,15 +1,26 @@
 #tag Class
 Protected Class Sample
+Inherits SampleBase
 	#tag Method, Flags = &h0
 		Sub describe()
 		  Print("Sample:")
+		  Print("baseProperty: " + Str(baseProperty))
 		  Print("decimalNumber: " + Str(decimalNumber))
 		  Print("message: " + message)
-		  Print("number: " + Str(number))
+		  if regularDate <> nil then Print("regularDate: " + regularDate.LongDate + " " + regularDate.LongTime + " GMT " + Str(regularDate.GMToffset))
 		  Print("test: " + Str(test))
+		  Dim optionalBoolStr As String
+		  If optionalBool = Nil Then
+		    optionalBoolStr = "Nil"
+		  ElseIf optionalBool Then
+		    optionalBoolStr = "True"
+		  Else
+		    optionalBoolStr = "False"
+		  End If
+		  Print("optionalBool: " + optionalBoolStr)
 		  Print("tm: ")
 		  for each t as Xojo.Core.Date in tm
-		    Print("> " + t.toText())
+		    Print("> " + t.toText(Xojo.Core.Locale.Current, Xojo.Core.Date.FormatStyles.Full, Xojo.Core.Date.FormatStyles.Full))
 		  next
 		  Print(EndOfLine)
 		End Sub
@@ -25,7 +36,11 @@ Protected Class Sample
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
-		number As Integer
+		optionalBool As Xoson.O.OptionalBoolean
+	#tag EndProperty
+
+	#tag Property, Flags = &h0
+		regularDate As Date
 	#tag EndProperty
 
 	#tag Property, Flags = &h0
@@ -44,6 +59,7 @@ Protected Class Sample
 			Group="ID"
 			InitialValue="-2147483648"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Left"
@@ -51,10 +67,13 @@ Protected Class Sample
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="message"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="String"
 			EditorType="MultiLineEditor"
 		#tag EndViewProperty
@@ -62,13 +81,17 @@ Protected Class Sample
 			Name="Name"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Super"
 			Visible=true
 			Group="ID"
+			InitialValue=""
 			Type="String"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="Top"
@@ -76,21 +99,31 @@ Protected Class Sample
 			Group="Position"
 			InitialValue="0"
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="decimalNumber"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Double"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
-			Name="number"
+			Name="regularDate"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Integer"
+			EditorType=""
 		#tag EndViewProperty
 		#tag ViewProperty
 			Name="test"
+			Visible=false
 			Group="Behavior"
+			InitialValue=""
 			Type="Boolean"
+			EditorType=""
 		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class

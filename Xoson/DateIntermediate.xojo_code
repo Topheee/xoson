@@ -145,6 +145,11 @@ Private Class DateIntermediate
 			Group="Behavior"
 			Type="Integer"
 		#tag EndViewProperty
+		#tag ViewProperty
+			Name="millisecond"
+			Group="Behavior"
+			Type="Integer"
+		#tag EndViewProperty
 	#tag EndViewBehavior
 End Class
 #tag EndClass
