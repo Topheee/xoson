@@ -475,7 +475,10 @@ Protected Module Xoson
 		  Dim objTypeInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(obj)
 		  Dim jsonTypeInfo As Xojo.Introspection.TypeInfo = Xojo.Introspection.GetType(json)
 		  
+		  'types of special cases
 		  Dim optionalPrimitiveTypeInfo As Xojo.Introspection.TypeInfo = GetTypeInfo(Xoson.O.OptionalPrimitive)
+		  Dim dictionaryTypeInfo As Xojo.Introspection.TypeInfo = GetTypeInfo(Dictionary)
+		  Dim coreDictionaryTypeInfo As Xojo.Introspection.TypeInfo = GetTypeInfo(Xojo.Core.Dictionary)
 		  
 		  if objTypeInfo.IsArray and not jsonTypeInfo.IsArray then
 		    Raise New XosonException(ParseError.TypeNotMatching, "Object type " + objTypeInfo.Name + " is array but JSON type " + jsonTypeInfo.Name + " is non-array.")
@@ -518,6 +521,18 @@ Protected Module Xoson
 		        end if
 		        
 		        valueProp.Value(optionalPrimitiveObject) = childValue
+		        
+		      elseif propertyType = coreDictionaryTypeInfo then
+		        propertyInfo.Value(obj) = childValue
+		        
+		      elseif propertyType = dictionaryTypeInfo then
+		        'convert Xojo.Core.Dictionary to Dictionary by copying all values.
+		        Dim srcDict As Xojo.Core.Dictionary = childValue
+		        Dim dstDict As New Dictionary
+		        for each srcEntry As Xojo.Core.DictionaryEntry in srcDict
+		          dstDict.Value(srcEntry.Key) = srcEntry.Value
+		        next
+		        propertyInfo.Value(obj) = dstDict
 		        
 		      elseif implicitlyConvertible(childType, propertyType) then
 		        propertyInfo.Value(obj) = childValue

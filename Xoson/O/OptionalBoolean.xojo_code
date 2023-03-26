@@ -19,6 +19,16 @@ Inherits Xoson.O.OptionalPrimitive
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function ToString() As String
+		  If Value Then
+		    Return "true"
+		  Else
+		    Return "false"
+		  End If
+		End Function
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
 		Value As Boolean

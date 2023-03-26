@@ -18,6 +18,12 @@ Protected Class OptionalUInt32
 		End Sub
 	#tag EndMethod
 
+	#tag Method, Flags = &h0
+		Function ToString() As String
+		  Return Value.ToString
+		End Function
+	#tag EndMethod
+
 
 	#tag Property, Flags = &h0
 		Value As UInt32
