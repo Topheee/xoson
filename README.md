@@ -4,11 +4,15 @@ __Xoson__ provides utilities to convert [Xojo](https://www.xojo.com/) objects to
 
 ## Requirements
 
-The project makes use of the new `Xojo.Data.*` functions, meaning that **Xojo 2015 and above** are required (not all versions are tested).
+The project makes use of the new `Xojo.Data.*` functions, meaning that **Xojo 2015 and above** are required (not all versions are tested). Note that the project was developed using Xojo 2019 r1.1.
 
 ## Installation
 
-Copy the __Xoson__ module into your project. The only exported elements are the `XosonException` class and the `[to|from]JSON()` functions.
+Copy the __Xoson__ module into your project. The only globally exported elements are the `XosonException` class and the `[to|from]JSON()` functions.
+
+## Updates
+
+__Xoson__ follows [Semantic Versioning 2.0.0](https://semver.org/). So for _PATCH_ and _MINOR_ version changes, you can simply replace the old `Xoson` module in your project with the new one. For _MAJOR_ version changes please consult the [release announcements](https://github.com/Topheee/xoson/releases).
 
 ## Usage
 
