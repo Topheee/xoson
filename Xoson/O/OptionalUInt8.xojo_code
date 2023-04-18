@@ -20,7 +20,11 @@ Protected Class OptionalUInt8
 
 	#tag Method, Flags = &h0
 		Function ToString() As String
-		  Return Value.ToString
+		  #If XojoVersion < 2020
+		    Return Str(Value)
+		  #Else
+		    Return Value.ToString
+		  #Endif
 		End Function
 	#tag EndMethod
 

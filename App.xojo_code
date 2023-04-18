@@ -13,6 +13,7 @@ Inherits ConsoleApplication
 		  serializable.regularDate = new Date()
 		  serializable.Message = "These violent delights have violent ends"
 		  serializable.tm.Append(Xojo.Core.Date.Now)
+		  serializable.optionalBool = true
 		  
 		  serializable.describe()
 		  
@@ -30,7 +31,7 @@ Inherits ConsoleApplication
 		  serializable.Message = "And in their triump die, like fire and powder Which, as they kiss, consume"
 		  serializable.decimalNumber = 4.2
 		  serializable.test = true
-		  serializable.optionalBool = true
+		  serializable.optionalBool = Nil
 		  serializable.baseProperty = 1337
 		  
 		  serializable.describe()

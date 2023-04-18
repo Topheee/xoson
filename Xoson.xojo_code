@@ -521,6 +521,7 @@ Protected Module Xoson
 		        end if
 		        
 		        valueProp.Value(optionalPrimitiveObject) = childValue
+		        propertyInfo.Value(obj) = optionalPrimitiveObject
 		        
 		      elseif propertyType = coreDictionaryTypeInfo then
 		        propertyInfo.Value(obj) = childValue
