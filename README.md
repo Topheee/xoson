@@ -1,6 +1,6 @@
 # Xoson - Xojo JSON Object Serialization
 
-__Xoson__ provides utilities to convert [Xojo](https://www.xojo.com/) objects to and from [JSON](https://json.org/). The project contains a simple example on how to use the API.
+__Xoson__ provides utilities to convert plain [Xojo](https://www.xojo.com/) objects to and from [JSON](https://json.org/). It utilizes Xojo's built-in [JSON Serialization](https://documentation.xojo.com/topics/file_management/reading_and_writing_data_in_json_format.html) spiced with some introspection magic. The project contains a simple example on how to use the API.
 
 ## Requirements
 
@@ -47,7 +47,7 @@ Print(serialization)
 
 * Only **public** properties are considered (feel free to change the code).
 * For **de**-serialization (`fromJSON()`), properties must be primitive, dates (`Date` and `Xojo.Core.Date`) or of a class with a public trivial constructor (no parameters). Arrays of those types are also supported.
-* Dates are serialized and read as **ISO8601** in **UTC** (to get millisecond-level precision, use `Xojo.Core.Date` instead of `Date`).
+* Dates are serialized and read as **RFC 3339** in **UTC** (to get millisecond-level precision, use `Xojo.Core.Date` instead of `Date`).
 * Multi-dimensional arrays are not supported. Feel free to contribute.
 
 This project is licensed under the terms of the MIT license.
